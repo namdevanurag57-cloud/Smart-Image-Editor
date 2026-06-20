@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <title>Smart Image Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<b
+    <!-- Main Header Navigation -->
+    <header class="main-header">
+        <div class="header-wrapper">
+            <div class="header-logo">
+                <h1>Smart Image Editor</h1>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span>☰</span>
+            </button>
+            
+            <!-- Quick Access Tools Menu -->
+            <nav class="header-nav" id="headerNav">
+                <a href="#" class="header-tool-link" data-tool="meme">MEME</a>
+                <a href="#" class="header-tool-link" data-tool="social">SOCIAL MEDIA</a>
+                <a href="#" class="header-tool-link" data-tool="adjust">ADJUST</a>
+                <a href="#" class="header-tool-link" data-tool="effects">EFFECTS</a>
+                <a href="#" class="header-tool-link" data-tool="text">TEXT</a>
+                <a href="#" class="header-tool-link" data-tool="transform">TRANSFORM</a>
+                
+                <!-- More Tools Dropdown -->
+                <div class="tools-dropdown-wrapper">
+                    <button class="tools-dropdown-btn">MORE TOOLS <span class="arrow">▼</span></button>
+                    <div class="tools-dropdown-content">
+                        <div class="dropdown-column">
+                            <div class="category-title">SMART TOOLS</div>
+                            <a href="#" class="dropdown-link" data-tool="study">
+                                <span class="icon">T</span> Study Notes
+                            </a>
+                            <a href="#" class="dropdown-link" data-tool="thumbnail">
+                                <span class="icon">B</span> Thumbnail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="header-actions">
+                <!-- Zoom Controls (shown in editor mode) -->
+                <div class="zoom-controls" id="zoomControls" style="display: none;">
+                    <button id="zoomOutBtn" class="btn btn-secondary" title="Zoom Out (Ctrl+-)">−</button>
+                    <span id="zoomLevel">100%</span>
+                    <button id="zoomInBtn" class="btn btn-secondary" title="Zoom In (Ctrl++)">+</button>
+                    <button id="zoomResetBtn" class="btn btn-secondary" title="Reset Zoom">Reset</button>
+                </div>
+                
+                <!-- Back & Download buttons (shown in editor mode) -->
+                <button id="backToHome" class="btn btn-link" style="display: none;">Back to Home</button>
+                <button id="downloadImage" class="btn btn-primary" style="display: none;">Download</button>
+                
+                <!-- Auth buttons (shown on landing page) -->
+                <div class="auth-buttons" id="authButtons">
+                    <button id="loginBtn" class="btn btn-link-auth">Login</button>
+                    <button id="signupBtn" class="btn btn-signup">Sign up</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Login</h2>
+                <button class="modal-close" id="closeLoginModal">✕</button>
+            </div>
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <p class="auth-footer">Don't have an account? <a href="#" id="loginToSignup">Sign up</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- SIGNUP MODAL -->
+    <div id="signupModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sign up</h2>
+                <button class="modal-close" id="closeSignupModal">✕</button>
+            </div>
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign up</button>
+                <p class="auth-footer">Already have an account? <a href="#" id="signupToLogin">Login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="page-wrapper">
+        <!-- LANDING PAGE -->
+        <div id="landingPage" class="page-section active">
+            <div class="landing-content">
+                <div class="upload-zone-container">
+                    <div id="uploadZone" class="upload-zone">
+                        <h2>Upload Your Image</h2>
+                        <p>Drag and drop or click to select</p>
+                        <button id="selectImageBtn" class="btn btn-large">Choose Image</button>
+                        <input type="file" id="imageInput" accept="image/*" hidden>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDITOR PAGE -->
+        <div id="editorPage" class="page-section">
+            <div class="editor-container">
+                <div class="editor-canvas-wrapper" id="canvasWrapper">
+                    <canvas id="canvas"></canvas>
+                </div>
+
+                <!-- ADJUST TOOL -->
+                <div class="tool-controls" id="adjustTool" style="display: none;">
+                    <h3>Adjust Image</h3>
+                    <div class="control-group">
+                        <label>Brightness: <span id="brightValue">0</span></label>
+                        <input type="range" id="brightSlider" min="-100" max="100" value="0" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Contrast: <span id="contrastValue">0</span></label>
+                        <input type="range" id="contrastSlider" min="-100" max="100" value="0" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Saturation: <span id="saturValue">0</span></label>
+                        <input type="range" id="saturSlider" min="-100" max="100" value="0" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Hue: <span id="hueValue">0</span></label>
+                        <input type="range" id="hueSlider" min="-180" max="180" value="0" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Vibrance: <span id="vibranceValue">0</span></label>
+                        <input type="range" id="vibranceSlider" min="-100" max="100" value="0" class="slider">
+                    </div>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-preset="bw">B&W</button>
+                        <button class="preset-btn" data-preset="sepia">Sepia</button>
+                        <button class="preset-btn" data-preset="vivid">Vivid</button>
+                        <button class="preset-btn" data-preset="cool">Cool</button>
+                        <button class="preset-btn" data-preset="warm">Warm</button>
+                        <button class="preset-btn" data-preset="faded">Faded</button>
+                    </div>
+                    <button id="resetAdjust" class="btn btn-secondary">Reset</button>
+                </div>
+
+                <!-- EFFECTS TOOL -->
+                <div class="tool-controls" id="effectsTool" style="display: none;">
+                    <h3>Apply Effects</h3>
+                    <div class="control-group">
+                        <label>Blur: <span id="blurValue">0</span></label>
+                        <input type="range" id="blurSlider" min="0" max="50" value="0" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Sharpen: <span id="sharpenValue">0</span></label>
+                        <input type="range" id="sharpenSlider" min="0" max="50" value="0" class="slider">
+                    </div>
+                    <div class="effect-buttons">
+                        <button id="grayscaleBtn" class="effect-toggle-btn">Grayscale</button>
+                        <button id="sepiaBtn" class="effect-toggle-btn">Sepia</button>
+                        <button id="invertBtn" class="effect-toggle-btn">Invert</button>
+                        <button id="posterizeBtn" class="effect-toggle-btn">Posterize</button>
+                    </div>
+                    <button id="resetEffects" class="btn btn-secondary">Reset</button>
+                </div>
+
+                <!-- TEXT TOOL -->
+                <div class="tool-controls" id="textTool" style="display: none;">
+                    <h3>Add Text</h3>
+                    <div class="control-group">
+                        <textarea id="textInput" placeholder="Enter your text..." rows="3"></textarea>
+                    </div>
+                    <div class="control-group">
+                        <label>Font Size: <span id="fontSizeValue">32</span>px</label>
+                        <input type="range" id="fontSizeSlider" min="10" max="250" value="32" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Font:</label>
+                        <select id="fontSelect">
+                            <option value="Arial">Arial</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Courier">Courier</option>
+                            <option value="Comic Sans MS">Comic Sans MS</option>
+                            <option value="Impact">Impact</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Color:</label>
+                        <input type="color" id="textColorPicker" value="#000000">
+                    </div>
+                    <div class="control-group">
+                        <label>Alignment:</label>
+                        <div class="alignment-buttons">
+                            <button class="align-btn" data-align="left">Left</button>
+                            <button class="align-btn" data-align="center">Center</button>
+                            <button class="align-btn" data-align="right">Right</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Opacity: <span id="opacityValue">100</span>%</label>
+                        <input type="range" id="opacitySlider" min="0" max="100" value="100" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="boldCheck"> Bold
+                        </label>
+                    </div>
+                    <button id="addTextBtn" class="btn btn-success">Add Text</button>
+                    <button id="clearTextBtn" class="btn btn-secondary">Clear Text</button>
+                </div>
+
+                <!-- TRANSFORM TOOL -->
+                <div class="tool-controls" id="transformTool" style="display: none;">
+                    <h3>Transform Image</h3>
+                    <div class="transform-buttons">
+                        <button id="rotateLeftBtn" class="btn btn-secondary">Rotate Left</button>
+                        <button id="rotateRightBtn" class="btn btn-secondary">Rotate Right</button>
+                        <button id="flipHBtn" class="btn btn-secondary">Flip Horizontal</button>
+                        <button id="flipVBtn" class="btn btn-secondary">Flip Vertical</button>
+                    </div>
+                    <button id="cropBtn" class="btn btn-success">✂️ Crop</button>
+                    <button id="resetTransform" class="btn btn-secondary">Reset</button>
+                </div>
+
+                <!-- SMART TOOLS -->
+                
+                <!-- STUDY NOTES MODE -->
+                <div class="tool-controls" id="studyTool" style="display: none;">
+                    <h3>📚 Study Notes Mode</h3>
+                    <p class="tool-desc">Make scanned notes clear, sharp, and easy to read. Perfect for studying!</p>
+                    
+                    <div class="control-group">
+                        <label>Contrast Enhancement: <span id="studyContrastValue">50</span>%</label>
+                        <input type="range" min="0" max="100" value="50" id="studyContrastSlider" class="slider">
+                        <small>Higher = more contrast between text and paper</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Text Clarity (Sharpening): <span id="studyClarityValue">40</span>%</label>
+                        <input type="range" min="0" max="100" value="40" id="studyClaritySlider" class="slider">
+                        <small>Makes text edges crisp and clear</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Noise Reduction: <span id="studyNoiseValue">15</span>%</label>
+                        <input type="range" min="0" max="100" value="15" id="studyNoiseSlider" class="slider">
+                        <small>Removes background speckles and noise (lighter = better text quality)</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Brightness: <span id="studyBrightnessValue">Auto</span></label>
+                        <input type="range" min="-50" max="50" value="0" id="studyBrightnessSlider" class="slider">
+                        <small>Adjust overall brightness (0 = auto-detect)</small>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button id="applyStudyMode" class="btn btn-primary">✓ Apply Study Mode</button>
+                        <button id="resetStudyMode" class="btn btn-secondary">↻ Reset</button>
+                    </div>
+                </div>
+
+                <!-- THUMBNAIL MODE -->
+                <div class="tool-controls" id="thumbnailTool" style="display: none;">
+                    <h3>📸 Thumbnail Mode - Professional YouTube Ready</h3>
+                    <p class="tool-desc">Create eye-catching thumbnails optimized for YouTube, Twitch, and other platforms with live preview!</p>
+                    
+                    <div class="control-group">
+                        <label>Platform:</label>
+                        <select id="thumbPlatform" class="select-input">
+                            <option value="youtube">🎬 YouTube (1280x720, 16:9)</option>
+                            <option value="twitch">📺 Twitch (1280x720)</option>
+                            <option value="discord">💬 Discord</option>
+                            <option value="twitter">𝕏 Twitter/X (16:9)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Preset:</label>
+                        <div class="button-group">
+                            <button class="preset-btn active" data-preset="default">Default</button>
+                            <button class="preset-btn" data-preset="gaming">Gaming</button>
+                            <button class="preset-btn" data-preset="educational">Educational</button>
+                            <button class="preset-btn" data-preset="professional">Professional</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Enhancement Level: <span id="thumbEnhanceValue">60</span>%</label>
+                        <input type="range" min="0" max="100" value="60" id="thumbEnhanceSlider" class="slider">
+                        <small>Increases contrast and clarity</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Color Vibrancy: <span id="thumbVibranceValue">70</span>%</label>
+                        <input type="range" min="0" max="100" value="70" id="thumbVibranceSlider" class="slider">
+                        <small>Make colors pop more</small>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Vignette Strength: <span id="thumbVignetteValue">5</span></label>
+                        <input type="range" min="0" max="20" value="5" id="thumbVignetteSlider" class="slider">
+                        <small>Darkens edges to draw focus to center (0 = disabled)</small>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Exposure: <span id="thumbExposureValue">0</span></label>
+                        <input type="range" min="-50" max="50" value="0" id="thumbExposureSlider" class="slider">
+                        <small>Adjust overall brightness (-50 = darker, +50 = brighter)</small>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Add Text Overlay:</label>
+                        <input type="text" id="thumbTextInput" placeholder="Enter text (optional)" class="text-input">
+                        <small>Text that will appear on thumbnail</small>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Text Position:</label>
+                        <select id="thumbTextPosition" class="select-input">
+                            <option value="top-center">Top Center</option>
+                            <option value="center">Center</option>
+                            <option value="bottom-center">Bottom Center</option>
+                            <option value="top-left">Top Left</option>
+                            <option value="top-right">Top Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="bottom-right">Bottom Right</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Text Size: <span id="thumbTextSizeValue">48</span>px</label>
+                        <input type="range" min="20" max="120" value="48" id="thumbTextSizeSlider" class="slider">
+                        <small>Font size for overlay text</small>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Text Color:</label>
+                        <input type="color" id="thumbTextColor" value="#FFFFFF" class="color-picker">
+                        <small>Choose text color (white works best)</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Live Preview:</label>
+                        <div style="border: 2px solid var(--primary-color); border-radius: 4px; overflow: hidden; background: #f5f5f5;">
+                            <canvas id="thumbPreviewCanvas" width="320" height="180" style="max-width: 100%; height: auto; display: block;"></canvas>
+                        </div>
+                        <small>Updates in real-time as you adjust settings</small>
+                    </div>
+
+                    <div class="control-group">
+                        <button id="toggleBeforeAfter" class="btn btn-secondary" style="margin-bottom: 10px;">👁️ Toggle Before/After</button>
+                        <small>Click to compare original vs enhanced</small>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button id="applyThumbnail" class="btn btn-primary">✓ Apply Thumbnail Mode</button>
+                        <button id="resetThumbnail" class="btn btn-secondary">↻ Reset</button>
+                    </div>
+                </div>
+
+                <!-- SOCIAL MEDIA MODE -->
+                <div class="tool-controls" id="socialTool" style="display: none;">
+                    <h3>📱 Social Media Mode</h3>
+                    <p class="tool-desc">Optimize for Instagram, Facebook, TikTok. Perfect colors, aspect ratios, and compression handling!</p>
+                    
+                    <div class="control-group">
+                        <label>Platform:</label>
+                        <select id="socialPlatform" class="select-input">
+                            <option value="instagram">📷 Instagram (Square: 1080x1080, Portrait: 1080x1350)</option>
+                            <option value="facebook">👍 Facebook (1200x628 landscape)</option>
+                            <option value="tiktok">🎵 TikTok (1080x1920 portrait)</option>
+                            <option value="linkedin">💼 LinkedIn (1200x627 landscape)</option>
+                            <option value="twitter">🐦 Twitter (1200x675 landscape)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Orientation:</label>
+                        <div class="button-group">
+                            <button class="orientation-btn active" data-orientation="portrait">📱 Portrait</button>
+                            <button class="orientation-btn" data-orientation="landscape">🖥️ Landscape</button>
+                            <button class="orientation-btn" data-orientation="square">▢ Square</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>📐 Final Dimensions: <span id="socialDimensions">Loading...</span></label>
+                        <small>This is the exact size your image will be optimized for</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Preview (How it will look on the platform):</label>
+                        <div class="social-preview-box">
+                            <canvas id="socialPreviewCanvas" width="200" height="200" style="border: 2px solid #ccc; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Enhancement Intensity: <span id="socialIntensityValue">60</span>%</label>
+                        <input type="range" min="0" max="100" value="60" id="socialIntensitySlider" class="slider">
+                        <small>How much to enhance colors and sharpness</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Warmth: <span id="socialWarmthValue">0</span></label>
+                        <input type="range" min="-50" max="50" value="0" id="socialWarmthSlider" class="slider">
+                        <small>Negative = cooler/bluer, Positive = warmer/yellower</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Color Preset:</label>
+                        <div class="button-group">
+                            <button class="preset-btn active" data-preset="warm">☀️ Warm</button>
+                            <button class="preset-btn" data-preset="cool">❄️ Cool</button>
+                            <button class="preset-btn" data-preset="vibrant">✨ Vibrant</button>
+                            <button class="preset-btn" data-preset="cinematic">🎬 Cinematic</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button id="applySocial" class="btn btn-primary">✓ Apply Social Media Mode</button>
+                        <button id="resetSocial" class="btn btn-secondary">↻ Reset</button>
+                    </div>
+                </div>
+
+                <!-- MEME MODE -->
+                <div class="tool-controls" id="memeTool" style="display: none;">
+                    <h3>😂 Meme Mode</h3>
+                    <p class="tool-desc">Create Instagram/Reddit-ready memes with live preview! Smart colors, bold fonts, perfect impact!</p>
+                    
+                    <div class="control-group">
+                        <label>Top Text:</label>
+                        <input type="text" id="memeTopText" placeholder="Enter top text (optional)" class="text-input">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Bottom Text:</label>
+                        <input type="text" id="memeBottomText" placeholder="Enter bottom text (optional)" class="text-input">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Font:</label>
+                        <select id="memeFontFamily" class="select-input">
+                            <option value="Impact">Impact (Classic Meme)</option>
+                            <option value="Arial Black">Arial Black (Bold)</option>
+                            <option value="Arial">Arial (Clean)</option>
+                            <option value="Helvetica">Helvetica (Modern)</option>
+                            <option value="Georgia">Georgia (Elegant)</option>
+                            <option value="Courier New">Courier New (Monospace)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Text Size: <span id="memeTextSizeValue">50</span>px</label>
+                        <input type="range" min="20" max="120" value="50" id="memeTextSizeSlider" class="slider">
+                        <small>Font size for meme text</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Text Color Override:</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="color" id="memeTextColorPicker" value="#FFFFFF" class="color-picker">
+                            <label style="margin: 0;">
+                                <input type="checkbox" id="memeAutoColor"> Auto Color
+                            </label>
+                        </div>
+                        <small>Enable "Auto Color" to detect colors automatically, or pick a custom color</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Enhancement: <span id="memeEnhanceValue">60</span>%</label>
+                        <input type="range" min="0" max="100" value="60" id="memeEnhanceSlider" class="slider">
+                        <small>Contrast & vibrance (makes image bolder)</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Live Preview:</label>
+                        <div style="border: 2px solid #ccc; border-radius: 4px; overflow: hidden; background: #f5f5f5;">
+                            <canvas id="memePreviewCanvas" style="max-width: 100%; height: auto; display: block;"></canvas>
+                        </div>
+                        <small>Preview updates as you make changes</small>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button id="applyMeme" class="btn btn-primary">✓ Create Meme</button>
+                        <button id="resetMeme" class="btn btn-secondary">↻ Reset</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="shared-utils.js"></script>
+    <script src="smart-modes.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
